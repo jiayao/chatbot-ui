@@ -53,6 +53,18 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
 
   const stopConversationRef = useRef<boolean>(false);
 
+  const handleSave = async (message: Message) => {
+    const controller = new AbortController();
+      const response = await fetch('/api/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify(selectedConversation),
+      });
+  };
+
   const handleSend = async (message: Message, deleteCount = 0) => {
     if (selectedConversation) {
       let updatedConversation: Conversation;
@@ -583,6 +595,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
               models={models}
               loading={loading}
               onSend={handleSend}
+              onSaveMessage={handleSave}
               onUpdateConversation={handleUpdateConversation}
               onEditMessage={handleEditMessage}
               stopConversationRef={stopConversationRef}

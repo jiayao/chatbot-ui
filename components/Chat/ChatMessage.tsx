@@ -1,5 +1,5 @@
 import { Message } from '@/types';
-import { IconEdit } from '@tabler/icons-react';
+import { IconEdit, IconDeviceFloppy } from '@tabler/icons-react';
 import { useTranslation } from 'next-i18next';
 import { FC, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -13,12 +13,14 @@ interface Props {
   message: Message;
   messageIndex: number;
   onEditMessage: (message: Message, messageIndex: number) => void;
+  onSaveMessage: (message: Message) => void;
 }
 
 export const ChatMessage: FC<Props> = ({
   message,
   messageIndex,
   onEditMessage,
+  onSaveMessage
 }) => {
   const { t } = useTranslation('chat');
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -53,6 +55,11 @@ export const ChatMessage: FC<Props> = ({
       handleEditMessage();
     }
   };
+
+  const handleSaveMessage = () => {
+    // TODO: save should really happen at conversation level, not message level
+    onSaveMessage(message);
+  }
 
   const copyOnClick = () => {
     if (!navigator.clipboard) return;
@@ -197,11 +204,17 @@ export const ChatMessage: FC<Props> = ({
                 {message.content}
               </ReactMarkdown>
 
-              {(isHovering || window.innerWidth < 640) && (
+              {(isHovering || window.innerWidth > 640) && (
+                <div>
                 <CopyButton
                   messagedCopied={messagedCopied}
                   copyOnClick={copyOnClick}
                 />
+                <IconDeviceFloppy
+                  className="hover:text-gray-700 dark:hover:text-gray-300"
+                  onClick={handleSaveMessage}
+                />
+                </div>
               )}
             </>
           )}

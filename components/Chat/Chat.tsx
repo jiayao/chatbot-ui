@@ -37,6 +37,7 @@ interface Props {
     data: KeyValuePair,
   ) => void;
   onEditMessage: (message: Message, messageIndex: number) => void;
+  onSaveMessage: (message: Message) => void;
   stopConversationRef: MutableRefObject<boolean>;
 }
 
@@ -52,6 +53,7 @@ export const Chat: FC<Props> = ({
   onSend,
   onUpdateConversation,
   onEditMessage,
+  onSaveMessage,
   stopConversationRef,
 }) => {
   const { t } = useTranslation('chat');
@@ -180,6 +182,7 @@ export const Chat: FC<Props> = ({
                     message={message}
                     messageIndex={index}
                     onEditMessage={onEditMessage}
+                    onSaveMessage={onSaveMessage}
                   />
                 ))}
 
