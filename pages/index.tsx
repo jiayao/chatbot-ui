@@ -6,6 +6,7 @@ import {
   ChatFolder,
   Conversation,
   ErrorMessage,
+  GptPlugin,
   KeyValuePair,
   Message,
   OpenAIModel,
@@ -65,6 +66,25 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
       });
   };
 
+  const queryContext = async(message: Message) => {
+      const controller = new AbortController();
+      const response = await fetch('/api/queryDB', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({"query": message.content}),
+      });
+      if (!response.ok) {
+        console.error("Error in response: ", response);
+        controller.abort();
+        return null;
+      }
+      const result = (await response.json()).result;
+      return result;
+  }
+
   const handleSend = async (message: Message, deleteCount = 0) => {
     if (selectedConversation) {
       let updatedConversation: Conversation;
@@ -90,12 +110,18 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
       setLoading(true);
       setMessageIsStreaming(true);
       setMessageError(false);
-
+      
+      var context = null;
+      if (updatedConversation.plugins.includes(GptPlugin.RETRIEVAL)) {
+        context = await queryContext(message);
+      }
+     
       const chatBody: ChatBody = {
         model: updatedConversation.model,
         messages: updatedConversation.messages,
         key: apiKey,
         prompt: updatedConversation.prompt,
+        context: context
       };
 
       const controller = new AbortController();
@@ -351,6 +377,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
       model: OpenAIModels[OpenAIModelID.GPT_3_5],
       prompt: DEFAULT_SYSTEM_PROMPT,
       folderId: 0,
+      plugins: [],
     };
 
     const updatedConversations = [...conversations, newConversation];
@@ -384,6 +411,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
         model: OpenAIModels[OpenAIModelID.GPT_3_5],
         prompt: DEFAULT_SYSTEM_PROMPT,
         folderId: 0,
+        plugins: [],
       });
       localStorage.removeItem('selectedConversation');
     }
@@ -418,6 +446,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
       model: OpenAIModels[OpenAIModelID.GPT_3_5],
       prompt: DEFAULT_SYSTEM_PROMPT,
       folderId: 0,
+      plugins: [],
     });
     localStorage.removeItem('selectedConversation');
 
@@ -520,6 +549,7 @@ const Home: React.FC<HomeProps> = ({ serverSideApiKeyIsSet }) => {
         model: OpenAIModels[OpenAIModelID.GPT_3_5],
         prompt: DEFAULT_SYSTEM_PROMPT,
         folderId: 0,
+        plugins: []
       });
     }
   }, [serverSideApiKeyIsSet]);

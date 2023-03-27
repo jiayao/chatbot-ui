@@ -1,6 +1,7 @@
 import {
   Conversation,
   ErrorMessage,
+  GptPlugin,
   KeyValuePair,
   Message,
   OpenAIModel,
@@ -60,6 +61,8 @@ export const Chat: FC<Props> = ({
   const [currentMessage, setCurrentMessage] = useState<Message>();
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState<boolean>(false);
+  // TODO: this should be always false when starting new conversation
+  const [enableRetrievalPlugin, setEnableRetrievalPlugin] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -88,6 +91,16 @@ export const Chat: FC<Props> = ({
 
   const handleSettings = () => {
     setShowSettings(!showSettings);
+  };
+
+  const handleEnableRetrievalPlugin = () => {
+    if (!enableRetrievalPlugin) {
+      onUpdateConversation(conversation, { key: "plugins", value: [GptPlugin.RETRIEVAL] });
+    } else {
+      onUpdateConversation(conversation, { key: "plugins", value: [] });
+    }
+    console.log("handleEnableRetrievalPlugin " + !enableRetrievalPlugin);
+    setEnableRetrievalPlugin(!enableRetrievalPlugin);
   };
 
   useEffect(() => {
@@ -156,6 +169,11 @@ export const Chat: FC<Props> = ({
                       />
                     </div>
                   )}
+                  <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" value="" className="appearance-none peer" checked={enableRetrievalPlugin} onChange={handleEnableRetrievalPlugin}/>
+                      <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Retrieval Plugin</span>
+                    </label>
                 </div>
               </>
             ) : (
@@ -165,15 +183,20 @@ export const Chat: FC<Props> = ({
                 <IconSettings className="ml-2 cursor-pointer hover:opacity-50" onClick={handleSettings} size={18} />
               </div>
               {showSettings && (
-                <div className="flex flex-col mx-auto pt-8 space-y-10 w-[200px] sm:w-[300px]">
-                  <div className="flex flex-col h-full space-y-4 border p-2 rounded border-neutral-500">
-                    <ModelSelect
-                          model={conversation.model}
-                          models={models}
-                          onModelChange={(model) => onUpdateConversation(conversation, { key: "model", value: model })}
-                        />
+                  <div className="flex flex-col mx-auto pt-8 space-y-10 w-[200px] sm:w-[300px]">
+                    <div className="flex flex-col h-full space-y-4 border p-2 rounded border-neutral-500">
+                      <ModelSelect
+                            model={conversation.model}
+                            models={models}
+                            onModelChange={(model) => onUpdateConversation(conversation, { key: "model", value: model })}
+                          />
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" value="" className="appearance-none peer" checked={enableRetrievalPlugin} onChange={handleEnableRetrievalPlugin}/>
+                      <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Retrieval Plugin</span>
+                    </label>
                   </div>
-                </div>
               )}
 
                 {conversation.messages.map((message, index) => (

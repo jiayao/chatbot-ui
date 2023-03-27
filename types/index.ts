@@ -3,6 +3,10 @@ export interface OpenAIModel {
   name: string;
 }
 
+export enum GptPlugin {
+  RETRIEVAL = 'retrieval',
+}
+
 export enum OpenAIModelID {
   GPT_3_5 = 'gpt-3.5-turbo',
   GPT_4 = 'gpt-4',
@@ -38,6 +42,7 @@ export interface Conversation {
   model: OpenAIModel;
   prompt: string;
   folderId: number;
+  plugins: String[];
 }
 
 export interface ChatBody {
@@ -45,6 +50,7 @@ export interface ChatBody {
   messages: Message[];
   key: string;
   prompt: string;
+  context: string;
 }
 
 export interface KeyValuePair {
